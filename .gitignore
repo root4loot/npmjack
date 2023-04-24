@@ -1,0 +1,4 @@
+./npmjack
+.DS_Store
+dist/
+.vscode
