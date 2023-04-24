@@ -61,7 +61,7 @@ type Options struct {
 	Timeout     int    // timeout in seconds
 	Delay       int    // delay in seconds
 	DelayJitter int    // delay jitter in seconds
-	Verbose     bool   // hide info messages
+	Verbose     bool   // verbose logging
 	UserAgent   string // user agent
 }
 
