@@ -59,7 +59,7 @@ $ npmjack -i urls.txt
 
 **Stream targets (e.g. from [urldiscover](https://github.com/root4loot/urldiscover))**
 ```
-$ urldiscover -t hackerone.com --hide-status | npmjack -i urls.txt
+$ urldiscover -t hackerone.com --hide-status | npmjack
 ```
 
 ## Output
