@@ -96,14 +96,14 @@ func NewRunner() *Runner {
 
 // Run starts the runner
 func (r *Runner) Run(urls ...string) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.Options.Timeout)*time.Second)
-	defer cancel()
 	// defer close(r.Results)
 
 	sem := make(chan struct{}, r.Options.Concurrency)
 	var wg sync.WaitGroup
 
 	for _, url := range urls {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.Options.Timeout)*time.Second)
+		defer cancel()
 		url, err := normalizeURLString(url)
 		url = trimURLParams(url)
 		if err != nil {
