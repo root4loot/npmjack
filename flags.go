@@ -31,7 +31,7 @@ func (c *CLI) usage() {
 
 	fmt.Fprintf(w, "\nOUTPUT:\n")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\n", "-o", "--outfile", "output results to given file")
-	fmt.Fprintf(w, "\t%s, %s\t%s\n", "-hw", "--hide-claimed", "hide packages that are claimed")
+	fmt.Fprintf(w, "\t%s, %s\t%s\n", "-hc", "--hide-claimed", "hide packages that are claimed")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\n", "-s", "--silence", "silence everything")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\n", "-v", "--verbose", "verbose output")
 	fmt.Fprintf(w, "\t%s   %s\t%s\n", "  ", "--version", "display version")
