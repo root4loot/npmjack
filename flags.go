@@ -16,7 +16,7 @@ func (c *CLI) banner() {
 func (c *CLI) usage() {
 	w := tabwriter.NewWriter(os.Stdout, 2, 0, 3, ' ', 0)
 
-	fmt.Fprintf(w, "Usage:\t%s [options] (-u <url> | -l <target-list>)\n\n", os.Args[0])
+	fmt.Fprintf(w, "Usage:\t%s [options] (-u <url> | -i <targets.txt>)\n\n", os.Args[0])
 
 	fmt.Fprintf(w, "\nTARGETTING:\n")
 	fmt.Fprintf(w, "\t%s,   %s\t%s\n", "-u", "--url", "target URL")
