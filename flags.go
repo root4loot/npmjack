@@ -23,7 +23,7 @@ func (c *CLI) usage() {
 	fmt.Fprintf(w, "\t%s,   %s\t%s\n", "-i", "--infile", "file containing targets")
 
 	fmt.Fprintf(w, "\nCONFIGURATIONS:\n")
-	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d %s)\n", "-c", "--concurrency", "number of concurrent requests", npmjack.DefaultOptions().Concurrency, "requests/sec")
+	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d)\n", "-c", "--concurrency", "number of concurrent requests", npmjack.DefaultOptions().Concurrency)
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d %s)\n", "-t", "--timeout", "max request timeout", npmjack.DefaultOptions().Timeout, "seconds")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d %s)\n", "-d", "--delay", "delay between requests", npmjack.DefaultOptions().Delay, "milliseconds")
 	fmt.Fprintf(w, "\t%s, %s\t%s\t(Default: %d %s)\n", "-dj", "--delay-jitter", "max jitter between requests", npmjack.DefaultOptions().DelayJitter, "milliseconds")
