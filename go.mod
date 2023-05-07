@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/PuerkitoBio/purell v1.2.0
 	github.com/projectdiscovery/gologger v1.1.8
-	github.com/root4loot/urldiscover v1.0.0
+	github.com/root4loot/urlwalk v0.0.0-20230507101904-193980153aaa
 )
 
 require (

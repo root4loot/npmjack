@@ -57,9 +57,9 @@ $ npmjack -u https://www.hackerone.com/sites/default/files/js/js_C-5Xm0bH3IRZtqP
 $ npmjack -i urls.txt
 ```
 
-**Stream targets (e.g. from [urldiscover](https://github.com/root4loot/urldiscover))**
+**Stream targets (e.g. from [urlwalk](https://github.com/root4loot/urlwalk))**
 ```
-$ urldiscover -t hackerone.com --hide-status --hide-warning | npmjack
+$ urlwalk -t hackerone.com --hide-status --hide-warning | npmjack
 ```
 
 ## Output

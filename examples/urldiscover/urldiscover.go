@@ -4,23 +4,23 @@ import (
 	"fmt"
 
 	npmjack "github.com/root4loot/npmjack/pkg/runner"
-	options "github.com/root4loot/urldiscover/pkg/options"
-	urldiscover "github.com/root4loot/urldiscover/pkg/runner"
+	options "github.com/root4loot/urlwalk/pkg/options"
+	urlwalk "github.com/root4loot/urlwalk/pkg/runner"
 )
 
 func main() {
-	urldiscoverOptions := options.Options{
+	urlwalkOptions := options.Options{
 		Concurrency: 20,
 		Timeout:     10,
 	}
 
-	// initialize urldiscover and npmjack
-	urldiscover := urldiscover.NewRunner(&urldiscoverOptions)
+	// initialize urlwalk and npmjack
+	urlwalk := urlwalk.NewRunner(&urlwalkOptions)
 	npmjack := npmjack.NewRunner()
 
-	// process results from urldiscover
+	// process results from urlwalk
 	go func() {
-		for result := range urldiscover.Results {
+		for result := range urlwalk.Results {
 			if result.StatusCode == 200 {
 				npmjack.Run(result.RequestURL)
 			}
@@ -38,6 +38,6 @@ func main() {
 		}
 	}()
 
-	// grab urls with urldiscover
-	urldiscover.Run("hackerone.com")
+	// grab urls with urlwalk
+	urlwalk.Run("hackerone.com")
 }
