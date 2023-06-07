@@ -12,6 +12,7 @@ func main() {
 	urlwalkOptions := options.Options{
 		Concurrency: 20,
 		Timeout:     10,
+		Resolvers:   []string{"8.8.8.8", "208.67.222.222"},
 	}
 
 	// initialize urlwalk and npmjack

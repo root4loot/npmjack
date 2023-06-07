@@ -24,6 +24,7 @@ type CLI struct {
 	UserAgent             string // custom user-agent
 	Infile                string // file containin targets (newline separated)
 	Outfile               string // file to write results
+	ResolversFile         string // file containing DNS resolvers
 	HideClaimed           bool   // hide claimed packages
 	Verbose               bool   // hide info
 	Silence               bool   // suppress output from console
@@ -39,14 +40,20 @@ func main() {
 	var err error
 	cli := newCLI()
 	cli.initialize()
-	npmjack := npmjack.NewRunner()
 
+	npmjack := npmjack.NewRunner()
 	npmjack.Options.Concurrency = cli.Concurrency
 	npmjack.Options.Timeout = cli.Timeout
 	npmjack.Options.Delay = cli.Delay
 	npmjack.Options.DelayJitter = cli.DelayJitter
 	npmjack.Options.UserAgent = cli.UserAgent
 	npmjack.Options.Verbose = cli.Verbose
+
+	if cli.hasResolversFile() {
+		if npmjack.Options.Resolvers, err = cli.readFileLines(cli.ResolversFile); err != nil {
+			log.Errorf("Error reading file: %v", err)
+		}
+	}
 
 	cli.Writer = tabwriter.NewWriter(os.Stdout, 27, 0, 0, ' ', tabwriter.TabIndent)
 	if !cli.Silence && !cli.Verbose {
@@ -63,8 +70,8 @@ func main() {
 			npmjack.Run(url)
 		}
 	} else if cli.hasInfile() {
-		if targets, err = cli.readFileLines(); err != nil {
-			log.Fatalf("Error reading file: ", err)
+		if targets, err = cli.readFileLines(cli.Infile); err != nil {
+			log.Errorf("Error reading file: %v", err)
 		}
 	} else if cli.hasTarget() {
 		targets = cli.getTargets()
@@ -169,8 +176,8 @@ func (c *CLI) getTargets() (targets []string) {
 }
 
 // ReadFileLines reads a file line by line
-func (c *CLI) readFileLines() (lines []string, err error) {
-	file, err := os.Open(c.Infile)
+func (c *CLI) readFileLines(filepath string) (lines []string, err error) {
+	file, err := os.Open(filepath)
 	if err != nil {
 		return
 	}
@@ -211,4 +218,9 @@ func (c *CLI) hasInfile() bool {
 // hasOutfile determines if the user has provided an output file
 func (c *CLI) hasOutfile() bool {
 	return c.Outfile != ""
+}
+
+// hasResolversFile determines if the user has provided a resolvers file
+func (c *CLI) hasResolversFile() bool {
+	return c.ResolversFile != ""
 }

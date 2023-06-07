@@ -27,19 +27,20 @@ docker run -it npmjack -h
 Usage: ./npmjack [options] (-u <url> | -l <target-list>)
 
 TARGETTING:
-   -u,   --url           target URL
-   -i,   --infile        file containing targets
+   -u,   --url      target URL
+   -i,   --infile   file containing targets
 
 CONFIGURATIONS:
-   -c,  --concurrency    number of concurrent requests   (Default: 10 requests/sec)
-   -t,  --timeout        max request timeout             (Default: 30 seconds)
-   -d,  --delay          delay between requests          (Default: 0 milliseconds)
-   -dj, --delay-jitter   max jitter between requests     (Default: 0 milliseconds)
-   -ua, --user-agent     set user agent                  (Default: npmjack)
+   -c,  --concurrency    number of concurrent requests       (Default: 10)
+   -t,  --timeout        max request timeout                 (Default: 30 seconds)
+   -d,  --delay          delay between requests              (Default: 0 milliseconds)
+   -r,  --resolvers      file containing list of resolvers   (Default: System DNS)
+   -dj, --delay-jitter   max jitter between requests         (Default: 0 milliseconds)
+   -ua, --user-agent     set user agent                      (Default: npmjack)
 
 OUTPUT:
    -o,  --outfile        output results to given file
-   -hw, --hide-claimed   hide packages that are claimed
+   -hc, --hide-claimed   hide packages that are claimed
    -s,  --silence        silence everything
    -v,  --verbose        verbose output
         --version        display version

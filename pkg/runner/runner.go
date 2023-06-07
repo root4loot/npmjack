@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/purell"
+	"github.com/root4loot/goutils/nethttp"
 	"github.com/root4loot/npmjack/pkg/log"
 )
 
@@ -57,12 +58,13 @@ var (
 
 // Options contains options for the runner
 type Options struct {
-	Concurrency int    // number of concurrent requests
-	Timeout     int    // timeout in seconds
-	Delay       int    // delay in seconds
-	DelayJitter int    // delay jitter in seconds
-	Verbose     bool   // verbose logging
-	UserAgent   string // user agent
+	Concurrency int      // number of concurrent requests
+	Timeout     int      // timeout in seconds
+	Delay       int      // delay in seconds
+	DelayJitter int      // delay jitter in seconds
+	Verbose     bool     // verbose logging
+	UserAgent   string   // user agent
+	Resolvers   []string // DNS resolvers
 }
 
 // DefaultOptions returns default options
@@ -79,24 +81,31 @@ func DefaultOptions() *Options {
 // NewRunner returns a new runner
 func NewRunner() *Runner {
 	options := DefaultOptions()
+	var client *http.Client
+
+	client, _ = nethttp.ClientWithOptionalResolvers()
+	client.Transport = &http.Transport{
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+		MaxIdleConnsPerHost:   options.Concurrency,
+		ResponseHeaderTimeout: time.Duration(options.Timeout) * time.Second,
+	}
+	client.Timeout = time.Duration(options.Timeout) * time.Second
+
 	return &Runner{
 		Results: make(chan Result),
 		Visited: make(map[string]bool),
 		Options: *options,
-		client: &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-				MaxIdleConnsPerHost:   options.Concurrency,
-				ResponseHeaderTimeout: time.Duration(options.Timeout) * time.Second,
-			},
-			Timeout: time.Duration(options.Timeout) * time.Second,
-		},
+		client:  client,
 	}
 }
 
 // Run starts the runner
 func (r *Runner) Run(urls ...string) {
 	// defer close(r.Results)
+
+	if r.Options.Resolvers != nil {
+		r.client, _ = nethttp.ClientWithOptionalResolvers(r.Options.Resolvers...)
+	}
 
 	sem := make(chan struct{}, r.Options.Concurrency)
 	var wg sync.WaitGroup

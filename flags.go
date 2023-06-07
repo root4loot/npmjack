@@ -26,6 +26,7 @@ func (c *CLI) usage() {
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d)\n", "-c", "--concurrency", "number of concurrent requests", npmjack.DefaultOptions().Concurrency)
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d %s)\n", "-t", "--timeout", "max request timeout", npmjack.DefaultOptions().Timeout, "seconds")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d %s)\n", "-d", "--delay", "delay between requests", npmjack.DefaultOptions().Delay, "milliseconds")
+	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %v)\n", "-r", "--resolvers", "file containing list of resolvers", "System DNS")
 	fmt.Fprintf(w, "\t%s, %s\t%s\t(Default: %d %s)\n", "-dj", "--delay-jitter", "max jitter between requests", npmjack.DefaultOptions().DelayJitter, "milliseconds")
 	fmt.Fprintf(w, "\t%s, %s\t%s\t(Default: %s)\n", "-ua", "--user-agent", "set user agent", npmjack.DefaultOptions().UserAgent)
 
@@ -59,6 +60,8 @@ func (c *CLI) parseFlags() {
 	flag.IntVar(&c.DelayJitter, "dj", npmjack.DefaultOptions().DelayJitter, "")
 	flag.StringVar(&c.UserAgent, "user-agent", npmjack.DefaultOptions().UserAgent, "")
 	flag.StringVar(&c.UserAgent, "ua", npmjack.DefaultOptions().UserAgent, "")
+	flag.StringVar(&c.ResolversFile, "resolvers", "", "")
+	flag.StringVar(&c.ResolversFile, "r", "", "")
 
 	// OUTPUT
 	flag.BoolVar(&c.Silence, "s", false, "")
