@@ -26,7 +26,7 @@ docker run -it npmjack -h
 ```
 Usage: ./npmjack [options] (-u <url> | -l <target-list>)
 
-TARGETTING:
+TARGETING:
    -u,   --url      target URL
    -i,   --infile   file containing targets
 
