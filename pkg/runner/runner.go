@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/purell"
-	"github.com/root4loot/goutils/nethttp"
+	"github.com/root4loot/goutils/httputil"
 	"github.com/root4loot/npmjack/pkg/log"
 )
 
@@ -83,7 +83,7 @@ func NewRunner() *Runner {
 	options := DefaultOptions()
 	var client *http.Client
 
-	client, _ = nethttp.ClientWithOptionalResolvers()
+	client, _ = httputil.ClientWithOptionalResolvers()
 	client.Transport = &http.Transport{
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 		MaxIdleConnsPerHost:   options.Concurrency,
@@ -104,7 +104,7 @@ func (r *Runner) Run(urls ...string) {
 	// defer close(r.Results)
 
 	if r.Options.Resolvers != nil {
-		r.client, _ = nethttp.ClientWithOptionalResolvers(r.Options.Resolvers...)
+		r.client, _ = httputil.ClientWithOptionalResolvers(r.Options.Resolvers...)
 	}
 
 	sem := make(chan struct{}, r.Options.Concurrency)

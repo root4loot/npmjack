@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	npmjack "github.com/root4loot/npmjack/pkg/runner"
-	options "github.com/root4loot/urlwalk/pkg/options"
-	urlwalk "github.com/root4loot/urlwalk/pkg/runner"
+	options "github.com/root4loot/recrawl/pkg/options"
+	recrawl "github.com/root4loot/recrawl/pkg/runner"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	}
 
 	// initialize urlwalk and npmjack
-	urlwalk := urlwalk.NewRunner(&urlwalkOptions)
+	urlwalk := recrawl.NewRunner(&urlwalkOptions)
 	npmjack := npmjack.NewRunner()
 
 	// process results from urlwalk
