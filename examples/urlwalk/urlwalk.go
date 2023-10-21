@@ -9,19 +9,19 @@ import (
 )
 
 func main() {
-	urlwalkOptions := options.Options{
+	recrawlOptions := options.Options{
 		Concurrency: 20,
 		Timeout:     10,
 		Resolvers:   []string{"8.8.8.8", "208.67.222.222"},
 	}
 
-	// initialize urlwalk and npmjack
-	urlwalk := recrawl.NewRunner(&urlwalkOptions)
+	// initialize recrawl and npmjack
+	recrawl := recrawl.NewRunner(&recrawlOptions)
 	npmjack := npmjack.NewRunner()
 
-	// process results from urlwalk
+	// process results from recrawl
 	go func() {
-		for result := range urlwalk.Results {
+		for result := range recrawl.Results {
 			if result.StatusCode == 200 {
 				npmjack.Run(result.RequestURL)
 			}
@@ -39,6 +39,6 @@ func main() {
 		}
 	}()
 
-	// grab urls with urlwalk
-	urlwalk.Run("hackerone.com")
+	// grab urls with recrawl
+	recrawl.Run("hackerone.com")
 }
