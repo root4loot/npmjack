@@ -68,12 +68,14 @@ $ recrawl -t hackerone.com --hide-status --hide-warning | npmjack
 ```
 $ npmjack -i urls.txt
 
-PACKAGE                    NAMESPACE            CLAIMED     SOURCE
--------                    ---------            -------     ------
-jquery                                          No          https://www.hackerone.com/sites/default/files/js/js_C-5Xm0bH3IRZtqPDWPr8Ga4sby1ARHgF6iBlpL4UHao.js
-vertx                                           No          https://www.hackerone.com/sites/default/files/js/js_4FuDbOJrjJz7g2Uu2GQ6ZFtnbdPymNgBpNtoRkgooH8.js
-jquery                                          No          https://www.hackerone.com/sites/default/files/js/js_4FuDbOJrjJz7g2Uu2GQ6ZFtnbdPymNgBpNtoRkgooH8.js
-ev-emitter                                      No          https://www.hackerone.com/sites/default/files/js/js_4FuDbOJrjJz7g2Uu2GQ6ZFtnbdPymNgBpNtoRkgooH8.js
+PACKAGE                    NAMESPACE            CLAIMED   SOURCE
+-------                    ---------            -------   ------
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_EOrKavGmjAkpIaCW_cpGJ240OpVZev_5NI-WGIx5URg.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_ol7H2KkxPxe7E03XeuZQO5qMcg0RpfSOgrm_Kg94rOs.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_lP5U-DQzD6EU-x3A36l3bgTtpP67TDFIX-Y79fcxVys.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_U1grpZjVwn_GXVWMSXQGLsyl2A2Hrp8xPFJgAoCP7nU.js
+util                                            Yes         https://hackerone.com/assets/static/js/vendor.fb1db314.js
+react-resizable                                 Yes         https://hackerone.com/assets/static/js/vendor.fb1db314.js
 ```
 
 ## As lib

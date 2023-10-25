@@ -96,10 +96,10 @@ func (c *CLI) processResults(runner *npmjack.Runner) {
 
 						if pkg.Claimed {
 							if !c.HideClaimed {
-								fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%s\n", pkg.Name, pkg.Namespace, "No", result.RequestURL)
+								fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%s\n", pkg.Name, pkg.Namespace, "Yes", result.RequestURL)
 							}
 						} else {
-							fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%s\n", pkg.Name, pkg.Namespace, "Yes", result.RequestURL)
+							fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%s\n", pkg.Name, pkg.Namespace, "No", result.RequestURL)
 						}
 					}
 				}
