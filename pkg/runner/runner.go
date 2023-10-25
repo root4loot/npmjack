@@ -15,8 +15,10 @@ import (
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/root4loot/goutils/httputil"
-	"github.com/root4loot/npmjack/pkg/log"
+	"github.com/root4loot/relog"
 )
+
+var Log = relog.NewLogger("npmjack")
 
 type Runner struct {
 	Options Options         // options for the runner
@@ -29,7 +31,7 @@ type Result struct {
 	RequestURL string    // url that was requested
 	StatusCode int       // status code of the response
 	Packages   []Package // packages found in the response
-	Error      error     // error if any
+	Error      error     // error if anys
 }
 
 type Package struct {
@@ -63,6 +65,7 @@ type Options struct {
 	Delay       int      // delay in seconds
 	DelayJitter int      // delay jitter in seconds
 	Verbose     bool     // verbose logging
+	Silence     bool     // suppress output from console
 	UserAgent   string   // user agent
 	Resolvers   []string // DNS resolvers
 }
@@ -81,6 +84,7 @@ func DefaultOptions() *Options {
 // NewRunner returns a new runner
 func NewRunner() *Runner {
 	options := DefaultOptions()
+	SetLogLevel(options)
 	var client *http.Client
 
 	client, _ = httputil.ClientWithOptionalResolvers()
@@ -111,12 +115,14 @@ func (r *Runner) Run(urls ...string) {
 	var wg sync.WaitGroup
 
 	for _, url := range urls {
+		Log.Debugf("Running on %s", url)
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.Options.Timeout)*time.Second)
 		defer cancel()
 		url, err := normalizeURLString(url)
 		url = trimURLParams(url)
 		if err != nil {
-			log.Warningf("%v", err.Error())
+			Log.Warningf("%v", err.Error())
 			continue
 		}
 
@@ -143,13 +149,11 @@ func (r *Runner) Run(urls ...string) {
 
 // scrapePackages scrapes public NPM packages from a URL
 func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Client) Result {
-	if r.Options.Verbose {
-		log.Info("Checking " + url + "\n")
-	}
+	Log.Debugf("Scraping packages from %s", url)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		log.Warningf("%v", err.Error())
+		Log.Warningf("%v", err.Error())
 		return Result{RequestURL: url, Error: err}
 	}
 
@@ -159,7 +163,7 @@ func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Cl
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Warningf("%v", err.Error())
+		Log.Warningf("%v", err.Error())
 		return Result{RequestURL: url, Error: err}
 	}
 
@@ -170,7 +174,7 @@ func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Cl
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Warningf("Error reading response body:", err)
+		Log.Warningf("Error reading response body: %v", err)
 		return Result{RequestURL: url, Error: err}
 	}
 
@@ -199,7 +203,7 @@ func (r *Runner) isPackageClaimed(packageName string) bool {
 
 	resp, err := http.Head(url)
 	if err != nil {
-		log.Warningf("Error:", err)
+		Log.Warningf("Error: %v", err)
 		return false
 	}
 
@@ -222,9 +226,7 @@ func (r *Runner) getDelay() time.Duration {
 func (r *Runner) hasFileExtension(urlString string) bool {
 	parsedURL, err := url.Parse(urlString)
 	if err != nil {
-		if r.Options.Verbose {
-			log.Warningf("Error parsing URL:", err)
-		}
+		Log.Warningf("Error parsing URL: %v", err)
 		return false
 	}
 
@@ -272,4 +274,17 @@ func trimURLParams(url string) string {
 		return strings.Split(url, "?")[0]
 	}
 	return url
+}
+
+// SetLogLevel sets the logger level
+func SetLogLevel(options *Options) {
+	Log.Debugln("Setting logger level...")
+
+	if options.Verbose {
+		Log.SetLevel(relog.DebugLevel)
+	} else if options.Silence {
+		Log.SetLevel(relog.FatalLevel)
+	} else {
+		Log.SetLevel(relog.InfoLevel)
+	}
 }

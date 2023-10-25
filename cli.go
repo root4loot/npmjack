@@ -8,10 +8,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/gologger/levels"
-	"github.com/root4loot/npmjack/pkg/log"
+	"github.com/gookit/color"
 	npmjack "github.com/root4loot/npmjack/pkg/runner"
+	"github.com/root4loot/recrawl/pkg/log"
 )
 
 type CLI struct {
@@ -41,16 +40,17 @@ func main() {
 	cli := newCLI()
 	cli.initialize()
 
-	npmjack := npmjack.NewRunner()
-	npmjack.Options.Concurrency = cli.Concurrency
-	npmjack.Options.Timeout = cli.Timeout
-	npmjack.Options.Delay = cli.Delay
-	npmjack.Options.DelayJitter = cli.DelayJitter
-	npmjack.Options.UserAgent = cli.UserAgent
-	npmjack.Options.Verbose = cli.Verbose
+	runner := npmjack.NewRunner()
+	runner.Options.Concurrency = cli.Concurrency
+	runner.Options.Timeout = cli.Timeout
+	runner.Options.Delay = cli.Delay
+	runner.Options.DelayJitter = cli.DelayJitter
+	runner.Options.UserAgent = cli.UserAgent
+	runner.Options.Verbose = cli.Verbose
+	runner.Options.Silence = cli.Silence
 
 	if cli.hasResolversFile() {
-		if npmjack.Options.Resolvers, err = cli.readFileLines(cli.ResolversFile); err != nil {
+		if runner.Options.Resolvers, err = cli.readFileLines(cli.ResolversFile); err != nil {
 			log.Errorf("Error reading file: %v", err)
 		}
 	}
@@ -66,21 +66,25 @@ func main() {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			url := scanner.Text()
-			cli.processResults(npmjack)
-			npmjack.Run(url)
+			cli.processResults(runner)
+			runner.Run(url)
 		}
 	} else if cli.hasInfile() {
 		if targets, err = cli.readFileLines(cli.Infile); err != nil {
-			log.Errorf("Error reading file: %v", err)
+			npmjack.Log.Errorf("Error reading file: %v", err)
 		}
 	} else if cli.hasTarget() {
 		targets = cli.getTargets()
 	}
 
 	for _, target := range targets {
-		cli.processResults(npmjack)
-		npmjack.Run(target)
+		cli.processResults(runner)
+		runner.Run(target)
 	}
+}
+
+func newCLI() *CLI {
+	return &CLI{}
 }
 
 // processResults is a goroutine that processes the results as they come in
@@ -116,16 +120,6 @@ func (c *CLI) processResults(runner *npmjack.Runner) {
 func (c *CLI) initialize() {
 	c.parseFlags()
 	c.checkForExits()
-
-	if c.Silence {
-		gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
-	} else if c.Verbose {
-		gologger.DefaultLogger.SetMaxLevel(levels.LevelDebug)
-	}
-}
-
-func newCLI() *CLI {
-	return &CLI{}
 }
 
 // writeToFile writes the given lines to the given file
@@ -138,7 +132,7 @@ func (c *CLI) writeToFile(lines []string) {
 
 	for i := range lines {
 		if _, err := file.WriteString(lines[i] + "\n"); err != nil {
-			log.Errorf("could not write line to file: %v", err)
+			npmjack.Log.Errorf("could not write line to file: %v", err)
 		}
 	}
 }
@@ -157,7 +151,7 @@ func (c *CLI) checkForExits() {
 
 	if !c.hasStdin() && !c.hasInfile() && !c.hasTarget() {
 		fmt.Println("")
-		log.Errorf("%s\n\n", "Missing target")
+		color.Redf("%s\n\n", "Missing target")
 		c.usage()
 	}
 }
@@ -177,6 +171,8 @@ func (c *CLI) getTargets() (targets []string) {
 
 // ReadFileLines reads a file line by line
 func (c *CLI) readFileLines(filepath string) (lines []string, err error) {
+	npmjack.Log.Debugf("Reading file: %s", filepath)
+
 	file, err := os.Open(filepath)
 	if err != nil {
 		return
