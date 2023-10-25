@@ -27,8 +27,8 @@ docker run -it npmjack -h
 Usage: ./npmjack [options] (-u <url> | -l <target-list>)
 
 TARGETING:
-   -u,   --url      target URL
-   -i,   --infile   file containing targets
+   -u,  --url            target URL
+   -i,  --infile         file containing URL's (newline separated)
 
 CONFIGURATIONS:
    -c,  --concurrency    number of concurrent requests       (Default: 10)

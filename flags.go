@@ -19,8 +19,8 @@ func (c *CLI) usage() {
 	fmt.Fprintf(w, "Usage:\t%s [options] (-u <url> | -i <targets.txt>)\n\n", os.Args[0])
 
 	fmt.Fprintf(w, "\nTARGETING:\n")
-	fmt.Fprintf(w, "\t%s,   %s\t%s\n", "-u", "--url", "target URL")
-	fmt.Fprintf(w, "\t%s,   %s\t%s\n", "-i", "--infile", "file containing targets")
+	fmt.Fprintf(w, "\t%s,  %s\t\t\t%s\n", "-u", "--url", "target URL")
+	fmt.Fprintf(w, "\t%s,  %s\t\t\t%s\n", "-i", "--infile", "file containing URL's (newline separated)")
 
 	fmt.Fprintf(w, "\nCONFIGURATIONS:\n")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %d)\n", "-c", "--concurrency", "number of concurrent requests", npmjack.DefaultOptions().Concurrency)
