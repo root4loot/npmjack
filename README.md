@@ -1,11 +1,17 @@
-![Go version](https://img.shields.io/badge/Go-v1.19-blue.svg) [![Contribute](https://img.shields.io/badge/Contribute-Welcome-green.svg)](CONTRIBUTING.md)
+<br>
+<div align="center">
+  <br>
+  <img src="assets/logo.png" alt="recrawl logo" width="300">
+</div>
 
-# npmjack
-npmjack is a command-line tool that allows you to find NPM packages from URL's and determine whether they are claimed (public) or not. It can be used to identify and prevent dependency confusion, a type of attack where a public package is replaced with a  malicious one.  
+<br>
 
-Using npmjack is easy. Simply provide a list of URL's to scan, and npmjack will search for any imported NPM packages in the JavaScript code of those pages. It will then check whether those packages are claimed or not by querying the NPM registry.  
+<div align="center">
+ A tool used to scan JavaScript files for NPM packages and assess their claimability. Handy for spotting Dependency Confusion vulnerabilities.
+</div>
 
-npmjack is a valuable tool for developers who want to ensure that their projects are not vulnerable to dependency confusion attacks. It is also useful for security professionals who need to audit their organization's use of third-party packages.
+<br>
+
 
 ## Installation
 
@@ -48,34 +54,51 @@ OUTPUT:
 
 ## Example
 
-**Single target**
-```
-$ npmjack -u https://www.hackerone.com/sites/default/files/js/js_C-5Xm0bH3IRZtqPDWPr8Ga4sby1ARHgF6iBlpL4UHao.js
-```
-
-**Multiple targets**
-```
-$ npmjack -i urls.txt
+**Single URL**
+```sh
+npmjack -u https://www.hackerone.com/sites/default/files/js/js_C-5Xm0bH3IRZtqPDWPr8Ga4sby1ARHgF6iBlpL4UHao.js
 ```
 
-**Stream targets (e.g. from [recrawl](https://github.com/root4loot/recrawl))**
+**Multiple URLs**
+```sh
+npmjack -i urls.txt
 ```
-$ recrawl -t hackerone.com --hide-status --hide-warning | npmjack
+
+Use [recrawl](https://github.com/root4loot/recrawl) to find `.js` URLs and pipe its results to NpmJack
+
+```sh
+recrawl -t hackerone.com --hide-status --hide-warning | npmjack
 ```
 
 ## Output
 
-```
-$ npmjack -i urls.txt
+```sh
+$ recrawl -t hackerone.com --hide-status --hide-warning | npmjack
 
 PACKAGE                    NAMESPACE            CLAIMED   SOURCE
 -------                    ---------            -------   ------
 jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_EOrKavGmjAkpIaCW_cpGJ240OpVZev_5NI-WGIx5URg.js
 jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_ol7H2KkxPxe7E03XeuZQO5qMcg0RpfSOgrm_Kg94rOs.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_lP5U-DQzD6EU-x3A36l3bgTtpP67TDFIX-Y79fcxVys.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_U1grpZjVwn_GXVWMSXQGLsyl2A2Hrp8xPFJgAoCP7nU.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_1yMolXFTeaqGGhfYh1qdP42Cf06oH4PgdG9FhiGwbS8.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_xF9mKu6OVNysPMy7w3zYTWNPFBDlury_lEKDCfRuuHs.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_coYiv6lRieZN3l0IkRYgmvrMASvFk2BL-jdq5yjFbGs.js
+vertx                                           Yes         https://www.hackerone.com/sites/default/files/js/js_49X7xBwrMQ94DmEeXrZsMj2O2H09Jn12bOR4pcENzvU.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_49X7xBwrMQ94DmEeXrZsMj2O2H09Jn12bOR4pcENzvU.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_4fGl1ylmYP1UN1LYpgag5KeomdCw60f9TrcboP7n_xc.js
+sinatra                                         Yes         https://www.hackerone.com/application-security/how-server-side-request-forgery-ssrf
+open-uri                                        Yes         https://www.hackerone.com/application-security/how-server-side-request-forgery-ssrf
 util                                            Yes         https://hackerone.com/assets/static/js/vendor.fb1db314.js
 react-resizable                                 Yes         https://hackerone.com/assets/static/js/vendor.fb1db314.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_q5jqDjlruRFH40xInB2iWuzyyIWbybGtXXw_8ZmMm-w.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_szq9MnNU-7YXnmbxrcpn4I5JxoF3SYq-k1Gf0mENDIk.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_5YhGQsbctK8n_K7tBlFMqnbjvtPLRqOKAF7UOGQibrg.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_jnaihVoc8oP0HbDoCX33ERgmAxK93_JCLONQldYU1Co.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_MwkUR38zEDMq2cgfwWUm-0QRjnW_3E1DUhoSTqF5cEg.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_YVxHw88AWuNDg2_UcWD3YEGdw-OMJOJSCa94-eiftk8.js
+vertx                                           Yes         https://www.hackerone.com/sites/default/files/js/js_MrK8-vEN31hvJ3cKuoqF_s1MtpXe7eZC4nwEKAqLALQ.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_MrK8-vEN31hvJ3cKuoqF_s1MtpXe7eZC4nwEKAqLALQ.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_VhuPXvhVksnz0EKsZaNqchtw6drabbGIMEJFhaLOlx8.js
+jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_Y2J8iu30we2OrQ1FC9uh739UPsQjLhTsbhsE8_jQ6jg.js
 ```
 
 ## As lib
