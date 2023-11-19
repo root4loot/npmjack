@@ -17,7 +17,7 @@
 
 ### Go
 ```
-go install github.com/root4loot/npmjack@master
+go install github.com/root4loot/npmjack@latest
 ```
 
 ### Docker
@@ -104,7 +104,7 @@ jquery                                          Yes         https://www.hackeron
 ## As lib
 
 ```
-go get github.com/root4loot/npmjack
+go get github.com/root4loot/npmjack@latest
 ```
 
 ```go
