@@ -84,14 +84,27 @@ var (
 	useArrayRegex      = regexp.MustCompile(`use:\s*\[([^\]]+)\]`)
 	presetPluginRegex  = regexp.MustCompile(`(?:presets?|plugins?):\s*\[([^\]]+)\]`)
 
-	cdnURLRegex     = regexp.MustCompile(`(?:https?://)?(?:unpkg\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)/(?:npm/)?(@?[a-zA-Z0-9/_-]+)`)
+	cdnURLRegex     = regexp.MustCompile(`(?:https?://)?(?:unpkg\.com|cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com)/(?:(?:npm|ajax/libs)/)?(@?[a-zA-Z0-9/_.-]+)`)
 	scriptSrcRegex  = regexp.MustCompile(`<script[^>]+src=['"]([^'"]+)['"]`)
 	importMapRegex  = regexp.MustCompile(`"(@?[a-zA-Z0-9/_-]+)":\s*['"]https?://[^'"]+['"]`)
-	sourceMapNodeModulesRegex = regexp.MustCompile(`webpack://[^/]*/(\.?/)?node_modules/(@?[^/]+(?:/[^/]+)?)`)
-	sourceMapPackageRegex     = regexp.MustCompile(`/(@?[a-zA-Z0-9/_-]+(?:/[a-zA-Z0-9/_-]+)?)/`)
+	sourceMapNodeModulesRegex = regexp.MustCompile(`webpack://[^/]*/(\.?/)?node_modules/(@?[^/]+(?:/[^/@]+)?)`)
+	sourceMapPackageRegex     = regexp.MustCompile(`/(@?[a-zA-Z0-9/_.-]+(?:/[a-zA-Z0-9/_.-]+)?)/`)
+	sourceMapFileRegex        = regexp.MustCompile(`node_modules/(@?[a-zA-Z0-9/_.-]+)/`)
 
 	webpackChunkRegex = regexp.MustCompile(`/\*\*\* WEBPACK CHUNK: (@?[a-zA-Z0-9/_-]+) \*\*\*/`)
 	bundleCommentRegex = regexp.MustCompile(`/\*[^*]*(@?[a-zA-Z0-9/_-]+(?:/[a-zA-Z0-9/_-]+)?)[^*]*\*/`)
+
+	umdGlobalRegex     = regexp.MustCompile(`(?:window|global)\[?['"](@?[a-zA-Z0-9/_-]+)['"]?\]?\s*=`)
+	umdFactoryRegex    = regexp.MustCompile(`factory\s*\(\s*(?:require\s*\(\s*['"]([^'"]+)['"]|(['"][^'"]+['"]))`)
+	globalAssignRegex  = regexp.MustCompile(`(?:window|global)\.(@?[A-Za-z][A-Za-z0-9_$]*)\s*=`)
+
+	minifiedCallRegex    = regexp.MustCompile(`\b[a-z]\(['"](@?[a-zA-Z0-9/_-]+)['"]`)
+	minifiedRequireRegex = regexp.MustCompile(`\b(?:n|r|e)\((\d+)\)`)
+	parcelRequireRegex   = regexp.MustCompile(`parcel\$require\(['"]([^'"]+)['"]\)`)
+
+	webpackExternalRegex = regexp.MustCompile(`externals\s*:\s*\{([^}]+)\}`)
+	rollupBundleRegex    = regexp.MustCompile(`// rollup bundle.*?require\(['"]([^'"]+)['"]\)`)
+
 	jsExtensions        = []string{".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx", ".vue", ".html", ".htm", ".svelte"}
 	jsonExtensions      = []string{".json"}
 	cicdExtensions      = []string{".yml", ".yaml", ".sh", ".bash"}
@@ -497,6 +510,17 @@ func (r *Runner) extractFromSourceMap(content string) []Package {
 				}
 			}
 		}
+
+		if matches := sourceMapFileRegex.FindAllStringSubmatch(source, -1); matches != nil {
+			for _, match := range matches {
+				if len(match) > 1 {
+					pkgName := match[1]
+					if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+						packages = append(packages, r.createPackageFromName(pkgName))
+					}
+				}
+			}
+		}
 	}
 
 	for _, sourceContent := range sourceMap.SourcesContent {
@@ -576,8 +600,10 @@ func (r *Runner) extractFromJavaScript(content string) []Package {
 	}
 
 	packages = append(packages, r.extractFromCDNUrls(content)...)
-
 	packages = append(packages, r.extractFromBundleComments(content)...)
+	packages = append(packages, r.extractFromUMDPatterns(content)...)
+	packages = append(packages, r.extractFromMinifiedCode(content)...)
+	packages = append(packages, r.extractFromWebpackExternals(content)...)
 
 	return packages
 }
@@ -671,6 +697,103 @@ func (r *Runner) parseAMDDependencies(depString string) []string {
 	}
 
 	return dependencies
+}
+
+func (r *Runner) extractFromUMDPatterns(content string) []Package {
+	var packages []Package
+
+	globalMatches := umdGlobalRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range globalMatches {
+		if len(match) > 1 {
+			pkgName := match[1]
+			if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+				packages = append(packages, r.createPackageFromName(pkgName))
+			}
+		}
+	}
+
+	factoryMatches := umdFactoryRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range factoryMatches {
+		for i := 1; i < len(match); i++ {
+			if match[i] != "" {
+				pkgName := strings.Trim(match[i], `'"`)
+				if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+					packages = append(packages, r.createPackageFromName(pkgName))
+				}
+			}
+		}
+	}
+
+	assignMatches := globalAssignRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range assignMatches {
+		if len(match) > 1 {
+			pkgName := strings.ToLower(match[1])
+			if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+				packages = append(packages, r.createPackageFromName(pkgName))
+			}
+		}
+	}
+
+	return packages
+}
+
+func (r *Runner) extractFromMinifiedCode(content string) []Package {
+	var packages []Package
+
+	callMatches := minifiedCallRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range callMatches {
+		if len(match) > 1 {
+			pkgName := match[1]
+			if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+				packages = append(packages, r.createPackageFromName(pkgName))
+			}
+		}
+	}
+
+	parcelMatches := parcelRequireRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range parcelMatches {
+		if len(match) > 1 {
+			pkgName := match[1]
+			if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+				packages = append(packages, r.createPackageFromName(pkgName))
+			}
+		}
+	}
+
+	rollupMatches := rollupBundleRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range rollupMatches {
+		if len(match) > 1 {
+			pkgName := match[1]
+			if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+				packages = append(packages, r.createPackageFromName(pkgName))
+			}
+		}
+	}
+
+	return packages
+}
+
+func (r *Runner) extractFromWebpackExternals(content string) []Package {
+	var packages []Package
+
+	externalMatches := webpackExternalRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range externalMatches {
+		if len(match) > 1 {
+			externalsBlock := match[1]
+			keyRegex := regexp.MustCompile(`['"](@?[a-zA-Z0-9/_-]+)['"]`)
+			keyMatches := keyRegex.FindAllStringSubmatch(externalsBlock, -1)
+			for _, km := range keyMatches {
+				if len(km) > 1 {
+					pkgName := km[1]
+					if !r.isBuiltinModule(pkgName) && r.looksLikePackageName(pkgName) {
+						packages = append(packages, r.createPackageFromName(pkgName))
+					}
+				}
+			}
+		}
+	}
+
+	return packages
 }
 
 func (r *Runner) extractFromConfigFile(content string) []Package {
