@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"text/tabwriter"
 
 	"github.com/gookit/color"
@@ -62,13 +63,16 @@ func main() {
 		fmt.Fprintln(cli.Writer, "\t-------\t---------            -------   ------\t")
 	}
 
+	var wg sync.WaitGroup
 	if cli.hasStdin() {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			url := scanner.Text()
-			cli.processResults(runner)
+			wg.Add(1)
+			cli.processResults(runner, &wg)
 			runner.Run(url)
 		}
+		wg.Wait()
 	} else if cli.hasInfile() {
 		if targets, err = cli.readFileLines(cli.Infile); err != nil {
 			npmjack.Log.Errorf("Error reading file: %v", err)
@@ -77,9 +81,13 @@ func main() {
 		targets = cli.getTargets()
 	}
 
-	for _, target := range targets {
-		cli.processResults(runner)
-		runner.Run(target)
+	if len(targets) > 0 {
+		for _, target := range targets {
+			wg.Add(1)
+			cli.processResults(runner, &wg)
+			runner.Run(target)
+		}
+		wg.Wait()
 	}
 }
 
@@ -88,8 +96,9 @@ func newCLI() *CLI {
 }
 
 // processResults is a goroutine that processes the results as they come in
-func (c *CLI) processResults(runner *npmjack.Runner) {
+func (c *CLI) processResults(runner *npmjack.Runner, wg *sync.WaitGroup) {
 	go func() {
+		defer wg.Done()
 		for result := range runner.Results {
 			if !c.Silence {
 				if result.Packages != nil {
@@ -100,10 +109,10 @@ func (c *CLI) processResults(runner *npmjack.Runner) {
 
 						if pkg.Claimed {
 							if !c.HideClaimed {
-								fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%s\n", pkg.Name, pkg.Namespace, "Yes", result.RequestURL)
+								fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%-35s %s\n", pkg.Name, pkg.Namespace, "Yes", result.RequestURL, result.Resolver)
 							}
 						} else {
-							fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%s\n", pkg.Name, pkg.Namespace, "No", result.RequestURL)
+							fmt.Fprintf(c.Writer, "%s\t%-12s         %-12s%-35s %s\n", pkg.Name, pkg.Namespace, "No", result.RequestURL, result.Resolver)
 						}
 					}
 				}

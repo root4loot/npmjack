@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -15,24 +15,26 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/purell"
-	"github.com/root4loot/goutils/httputil"
 	"github.com/root4loot/relog"
 )
 
 var Log = relog.NewLogger("npmjack")
 
 type Runner struct {
-	Options Options         // options for the runner
-	client  *http.Client    // http client
-	Results chan Result     // channel to receive results
-	Visited map[string]bool // map of visited urls
+	Options     Options         // options for the runner
+	client      *http.Client    // http client
+	resolver    *CustomResolver // custom DNS resolver
+	Results     chan Result     // channel to receive results
+	Visited     map[string]bool // map of visited urls
+	lastResolver string         // last resolver used for tracking
 }
 
 type Result struct {
 	RequestURL string    // url that was requested
 	StatusCode int       // status code of the response
 	Packages   []Package // packages found in the response
-	Error      error     // error if anys
+	Resolver   string    // DNS resolver used for this request
+	Error      error     // error if any
 }
 
 type Package struct {
@@ -121,30 +123,43 @@ func DefaultOptions() *Options {
 func NewRunner() *Runner {
 	options := DefaultOptions()
 	SetLogLevel(options)
-	var client *http.Client
 
-	client, _ = httputil.ClientWithOptionalResolvers()
-	client.Transport = &http.Transport{
+	// Create custom resolver with empty resolvers initially
+	resolver := NewCustomResolver([]string{}, time.Duration(options.Timeout)*time.Second)
+
+	// Create HTTP transport with custom dialer
+	transport := &http.Transport{
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 		MaxIdleConnsPerHost:   options.Concurrency,
 		ResponseHeaderTimeout: time.Duration(options.Timeout) * time.Second,
+		DialContext:           resolver.CustomDialContext,
 	}
-	client.Timeout = time.Duration(options.Timeout) * time.Second
+
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   time.Duration(options.Timeout) * time.Second,
+	}
 
 	return &Runner{
-		Results: make(chan Result),
-		Visited: make(map[string]bool),
-		Options: *options,
-		client:  client,
+		Results:  make(chan Result),
+		Visited:  make(map[string]bool),
+		Options:  *options,
+		client:   client,
+		resolver: resolver,
 	}
 }
 
 // Run starts the runner
 func (r *Runner) Run(urls ...string) {
-	// defer close(r.Results)
+	defer close(r.Results)
 
-	if r.Options.Resolvers != nil {
-		r.client, _ = httputil.ClientWithOptionalResolvers(r.Options.Resolvers...)
+	// Update resolver if custom resolvers are provided
+	if len(r.Options.Resolvers) > 0 {
+		r.resolver = NewCustomResolver(r.Options.Resolvers, time.Duration(r.Options.Timeout)*time.Second)
+		// Update the transport's DialContext
+		if transport, ok := r.client.Transport.(*http.Transport); ok {
+			transport.DialContext = r.resolver.CustomDialContext
+		}
 	}
 
 	sem := make(chan struct{}, r.Options.Concurrency)
@@ -204,11 +219,16 @@ func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Cl
 	}
 
 	defer resp.Body.Close()
-	res := Result{RequestURL: url, StatusCode: resp.StatusCode, Error: err}
+	res := Result{
+		RequestURL: url,
+		StatusCode: resp.StatusCode,
+		Resolver:   r.getLastResolver(),
+		Error:      err,
+	}
 
 	seenPackages := make(map[string]bool)
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		Log.Warningf("Error reading response body: %v", err)
 		return Result{RequestURL: url, Error: err}
@@ -840,7 +860,7 @@ func (r *Runner) isBuiltinModule(name string) bool {
 func (r *Runner) isPackageClaimed(packageName string) bool {
 	url := fmt.Sprintf("https://registry.npmjs.com/%s", packageName)
 
-	resp, err := http.Head(url)
+	resp, err := r.client.Head(url)
 	if err != nil {
 		Log.Warningf("Error: %v", err)
 		return false
@@ -935,6 +955,14 @@ func trimURLParams(url string) string {
 		return strings.Split(url, "?")[0]
 	}
 	return url
+}
+
+// getLastResolver returns the last resolver used by the custom resolver
+func (r *Runner) getLastResolver() string {
+	if r.resolver != nil {
+		return r.resolver.lastResolver
+	}
+	return "system"
 }
 
 // SetLogLevel sets the logger level
