@@ -2,3 +2,8 @@
 .DS_Store
 dist/
 .vscode
+npmjack
+debug.txt
+targets.txt
+domains.txt
+
