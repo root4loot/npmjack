@@ -74,7 +74,13 @@ Use [recrawl](https://github.com/root4loot/recrawl) to find all URLs and pipe th
 recrawl -t target.com --hide-status --hide-warning | npmjack
 ```
 
-npmjack detects NPM packages in JavaScript/TypeScript files, configuration files, CI/CD files, and documentation. It handles import/require statements, scoped packages, version specifiers, and build tool configurations.
+npmjack detects NPM packages in JS/TypeScript files, configuration files, CI/CD files, and documentation. It handles import/require statements, scoped packages, version specifiers, and build tool configurations.
+
+## Detection Methods
+
+npmjack uses several techniques to find NPM packages in different types of files. It looks through JS and TypeScript code for import and require statements, and checks package.json files and webpack configs. The tool can also parse source maps to find packages in minified code, which helps discover dependencies even when the original code has been compressed or bundled.
+
+For single-page apps, npmjack analyzes bundled JS files to identify module patterns from bundlers like webpack and rollup. It can handle UMD and AMD modules found in older applications, and detects minified libraries by looking for common compression patterns. The tool also finds CDN-hosted packages by checking URL patterns and parses webpack externals to catch packages loaded separately from the main bundle.
 
 ## Sample Output
 
