@@ -83,6 +83,16 @@ var expectedPackages = map[string][]string{
 		"missing-package-in-docs", "@company/internal-tool", "vulnerable-old-version",
 		"unclaimed-helper-lib", "missing-react-component",
 	},
+	"testdata/spa/app.js.map": {
+		"react", "@babel/core", "lodash", "@types/node", "missing-spa-package", 
+		"express", "unclaimed-helper", "moment", "vulnerable-spa-lib",
+	},
+	"testdata/spa/bundle.js": {
+		"react", "lodash", "@babel/core", "axios", "chart.js", "vue", "rxjs",
+	},
+	"testdata/spa/index.html": {
+		"react", "vue", "axios", "three", "gsap", "missing-cdn-package",
+	},
 }
 
 func TestPackageDetection(t *testing.T) {

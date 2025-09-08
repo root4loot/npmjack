@@ -1,0 +1,21 @@
+{
+  "version": 3,
+  "sources": [
+    "webpack://my-app/./node_modules/react/index.js",
+    "webpack://my-app/./node_modules/@babel/core/lib/index.js",
+    "webpack://my-app/./node_modules/lodash/lodash.js",
+    "webpack://my-app/./node_modules/@types/node/index.d.ts",
+    "webpack://my-app/./src/components/Button.tsx",
+    "webpack://my-app/./node_modules/missing-spa-package/dist/index.js"
+  ],
+  "sourcesContent": [
+    "const express = require('express'); module.exports = express;",
+    "import { useState } from 'react'; export default useState;",
+    "const helper = require('unclaimed-helper'); module.exports = helper;",
+    null,
+    "import moment from 'moment'; export { moment };",
+    "require('vulnerable-spa-lib'); module.exports = {};"
+  ],
+  "names": ["React", "useState", "moment"],
+  "mappings": "AAAA,IAAIA..."
+}
