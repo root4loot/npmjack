@@ -2,6 +2,8 @@ module github.com/root4loot/npmjack
 
 go 1.21.1
 
+toolchain go1.22.0
+
 require (
 	github.com/PuerkitoBio/purell v1.2.0
 	github.com/gookit/color v1.5.4
