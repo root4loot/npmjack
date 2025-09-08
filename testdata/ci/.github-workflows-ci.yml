@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm install -g typescript eslint prettier
+        npm install --save-dev @types/jest @types/node
+        yarn add --dev webpack webpack-cli babel-loader
+        npm install missing-ci-tool
+    
+    - name: Run linting
+      run: |
+        npm run lint
+        npx eslint src/
+        npx prettier --check .
+        npx missing-linter check
+    
+    - name: Run tests
+      run: |
+        npm test -- --coverage
+        npm run test:integration
+        npx jest --ci
+        npx missing-test-runner --parallel
+    
+    - name: Build project  
+      run: |
+        npm run build
+        npm run build:prod
+        npx webpack --mode production
+        npx missing-bundler optimize
+    
+    - name: Security audit
+      run: |
+        npm audit
+        npm audit fix
+        npx audit-ci
+        npm install missing-security-scanner
+        npx missing-security-scanner scan
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup deployment tools
+      run: |
+        npm install -g @vercel/ncc
+        npm install -g missing-deploy-cli
+        npm install deployment-helper missing-deploy-utils
+        
+    - name: Deploy to staging
+      run: |
+        npm run deploy:staging
+        npx missing-deploy-cli deploy --env staging
+        
+    - name: Smoke tests
+      run: |
+        npm install -g newman @playwright/test
+        npm run test:smoke
+        npx playwright test --project staging

@@ -7,7 +7,7 @@
 <br>
 
 <div align="center">
- A tool used to scan JavaScript files for NPM packages and assess their claimability. Handy for spotting Dependency Confusion vulnerabilities.
+ A tool to find NPM packages in web files and check if they're claimable. Useful for finding dependency confusion bugs.
 </div>
 
 <br>
@@ -64,11 +64,47 @@ npmjack -u https://www.hackerone.com/sites/default/files/js/js_C-5Xm0bH3IRZtqPDW
 npmjack -i urls.txt
 ```
 
-Use [recrawl](https://github.com/root4loot/recrawl) to find `.js` URLs and pipe its results to NpmJack
+Use [recrawl](https://github.com/root4loot/recrawl) to find all URLs and pipe them to npmjack (which filters out supported file types)
 
 ```sh
 recrawl -t hackerone.com --hide-status --hide-warning | npmjack
 ```
+
+## Supported File Types
+
+NpmJack can detect NPM packages in the following file types:
+
+**Configuration Files:**
+- `package.json`, `package-lock.json`, `yarn.lock`
+- `.eslintrc`, `.babelrc`, `tsconfig.json`
+- `webpack.config.js`, `vite.config.js`, `rollup.config.js`
+
+**Source Code:**
+- JavaScript (`.js`, `.mjs`, `.cjs`, `.jsx`)
+- TypeScript (`.ts`, `.tsx`)
+- Vue (`.vue`), Svelte (`.svelte`)
+- HTML files with embedded scripts
+
+**CI/CD & Build:**
+- `Dockerfile`, `docker-compose.yml`
+- GitHub Actions (`.github/workflows/*.yml`)
+- `Makefile`
+
+**Documentation:**
+- `README.md` and other markdown files
+- Code examples and installation commands
+
+## Detection Capabilities
+
+NpmJack can identify packages from various contexts:
+
+- **Import/Require statements** in JavaScript and TypeScript
+- **Dependencies** in package.json, yarn.lock, and package-lock.json  
+- **Build tool configurations** (webpack, babel, eslint, etc.)
+- **CI/CD pipelines** (Docker, GitHub Actions, Makefiles)
+- **Documentation examples** (npm install commands in README)
+- **Scoped packages** (@babel/core, @types/node, etc.)
+- **Version specifiers** (react@^18.0.0, lodash@4.17.21)
 
 ## Output
 
@@ -77,28 +113,11 @@ $ recrawl -t hackerone.com --hide-status --hide-warning | npmjack
 
 PACKAGE                    NAMESPACE            CLAIMED   SOURCE
 -------                    ---------            -------   ------
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_EOrKavGmjAkpIaCW_cpGJ240OpVZev_5NI-WGIx5URg.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_ol7H2KkxPxe7E03XeuZQO5qMcg0RpfSOgrm_Kg94rOs.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_1yMolXFTeaqGGhfYh1qdP42Cf06oH4PgdG9FhiGwbS8.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_xF9mKu6OVNysPMy7w3zYTWNPFBDlury_lEKDCfRuuHs.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_coYiv6lRieZN3l0IkRYgmvrMASvFk2BL-jdq5yjFbGs.js
-vertx                                           Yes         https://www.hackerone.com/sites/default/files/js/js_49X7xBwrMQ94DmEeXrZsMj2O2H09Jn12bOR4pcENzvU.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_49X7xBwrMQ94DmEeXrZsMj2O2H09Jn12bOR4pcENzvU.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_4fGl1ylmYP1UN1LYpgag5KeomdCw60f9TrcboP7n_xc.js
-sinatra                                         Yes         https://www.hackerone.com/application-security/how-server-side-request-forgery-ssrf
-open-uri                                        Yes         https://www.hackerone.com/application-security/how-server-side-request-forgery-ssrf
-util                                            Yes         https://hackerone.com/assets/static/js/vendor.fb1db314.js
-react-resizable                                 Yes         https://hackerone.com/assets/static/js/vendor.fb1db314.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_q5jqDjlruRFH40xInB2iWuzyyIWbybGtXXw_8ZmMm-w.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_szq9MnNU-7YXnmbxrcpn4I5JxoF3SYq-k1Gf0mENDIk.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_5YhGQsbctK8n_K7tBlFMqnbjvtPLRqOKAF7UOGQibrg.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_jnaihVoc8oP0HbDoCX33ERgmAxK93_JCLONQldYU1Co.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_MwkUR38zEDMq2cgfwWUm-0QRjnW_3E1DUhoSTqF5cEg.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_YVxHw88AWuNDg2_UcWD3YEGdw-OMJOJSCa94-eiftk8.js
-vertx                                           Yes         https://www.hackerone.com/sites/default/files/js/js_MrK8-vEN31hvJ3cKuoqF_s1MtpXe7eZC4nwEKAqLALQ.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_MrK8-vEN31hvJ3cKuoqF_s1MtpXe7eZC4nwEKAqLALQ.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_VhuPXvhVksnz0EKsZaNqchtw6drabbGIMEJFhaLOlx8.js
-jquery                                          Yes         https://www.hackerone.com/sites/default/files/js/js_Y2J8iu30we2OrQ1FC9uh739UPsQjLhTsbhsE8_jQ6jg.js
+jquery                                          Yes         https://www.hackerone.com/assets/js/app.js
+express                                         Yes         https://www.hackerone.com/package.json
+@babel/core                @babel/              No          https://www.hackerone.com/webpack.config.js
+missing-package                                 No          https://www.hackerone.com/Dockerfile
+typescript                                      Yes         https://www.hackerone.com/.github/workflows/ci.yml
 ```
 
 ## As lib

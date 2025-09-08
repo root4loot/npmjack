@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020", "DOM"],
+    "jsx": "react",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "@types/node",
+      "@types/react",
+      "@types/jest",
+      "@testing-library/jest-dom",
+      "missing-type-definitions",
+      "@company/internal-types"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "paths": {
+      "@components/*": ["src/components/*"],
+      "@utils/*": ["src/utils/*"],
+      "missing-module": ["node_modules/missing-module-alias"]
+    },
+    "plugins": [
+      { "name": "typescript-plugin-css-modules" },
+      { "name": "typescript-missing-plugin" }
+    ]
+  },
+  "extends": "@company/tsconfig-base",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

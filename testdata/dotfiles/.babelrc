@@ -1,0 +1,24 @@
+{
+  "presets": [
+    "@babel/preset-env",
+    "@babel/preset-react",
+    "@babel/preset-typescript",
+    "missing-babel-preset",
+    ["@babel/preset-stage-2", { "loose": true }]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-proposal-class-properties",
+    "babel-plugin-transform-decorators",
+    "babel-plugin-missing-transform",
+    ["babel-plugin-import", {
+      "libraryName": "antd",
+      "style": "css"
+    }]
+  ],
+  "env": {
+    "test": {
+      "plugins": ["babel-plugin-istanbul", "babel-plugin-missing-test"]
+    }
+  }
+}
