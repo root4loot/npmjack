@@ -10,14 +10,13 @@ import (
 	"github.com/miekg/dns"
 )
 
-// CustomResolver handles DNS resolution using custom DNS servers
 type CustomResolver struct {
 	resolvers    []string
 	timeout      time.Duration
-	lastResolver string // tracks the last resolver used
+	lastResolver string
 }
 
-// NewCustomResolver creates a new custom DNS resolver with the given resolvers
+// NewCustomResolver creates DNS resolver
 func NewCustomResolver(resolvers []string, timeout time.Duration) *CustomResolver {
 	return &CustomResolver{
 		resolvers: resolvers,
@@ -32,10 +31,7 @@ type ResolutionResult struct {
 	Error    error
 }
 
-// ResolveHost resolves a hostname using custom DNS resolvers
-// It tries each resolver in order until one succeeds
 func (r *CustomResolver) ResolveHost(ctx context.Context, host string) ResolutionResult {
-	// If no custom resolvers are provided, use system DNS
 	if len(r.resolvers) == 0 {
 		ips, err := net.DefaultResolver.LookupIPAddr(ctx, host)
 		if err != nil {
@@ -51,7 +47,6 @@ func (r *CustomResolver) ResolveHost(ctx context.Context, host string) Resolutio
 		return ResolutionResult{IPs: netIPs, Resolver: "system"}
 	}
 
-	// Try each custom resolver in order
 	for _, resolver := range r.resolvers {
 		result := r.tryResolver(ctx, host, resolver)
 		if result.Error == nil {
@@ -62,7 +57,7 @@ func (r *CustomResolver) ResolveHost(ctx context.Context, host string) Resolutio
 		Log.Debugf("DNS resolution failed with resolver %s: %v", resolver, result.Error)
 	}
 
-	// If all custom resolvers fail, try system DNS as fallback
+	// fallback
 	Log.Debugf("All custom resolvers failed, trying system DNS")
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, host)
 	if err != nil {
@@ -78,9 +73,7 @@ func (r *CustomResolver) ResolveHost(ctx context.Context, host string) Resolutio
 	return ResolutionResult{IPs: netIPs, Resolver: "system"}
 }
 
-// tryResolver attempts to resolve a hostname using a specific DNS resolver
 func (r *CustomResolver) tryResolver(ctx context.Context, host, resolver string) ResolutionResult {
-	// Ensure resolver has port
 	if !strings.Contains(resolver, ":") {
 		resolver = resolver + ":53"
 	}
@@ -89,12 +82,10 @@ func (r *CustomResolver) tryResolver(ctx context.Context, host, resolver string)
 		Timeout: r.timeout,
 	}
 
-	// Create DNS query for A record
 	msg := &dns.Msg{}
 	msg.SetQuestion(dns.Fqdn(host), dns.TypeA)
 	msg.RecursionDesired = true
 
-	// Try to resolve using the specified resolver
 	response, _, err := client.ExchangeContext(ctx, msg, resolver)
 	if err != nil {
 		return ResolutionResult{Error: fmt.Errorf("DNS query failed: %v", err)}
@@ -118,14 +109,12 @@ func (r *CustomResolver) tryResolver(ctx context.Context, host, resolver string)
 	return ResolutionResult{IPs: ips}
 }
 
-// CustomDialContext creates a custom dial context function that uses custom DNS resolvers
 func (r *CustomResolver) CustomDialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(address)
 	if err != nil {
 		return nil, err
 	}
 
-	// If it's already an IP address, use it directly
 	if net.ParseIP(host) != nil {
 		return (&net.Dialer{
 			Timeout:   30 * time.Second,
@@ -133,13 +122,11 @@ func (r *CustomResolver) CustomDialContext(ctx context.Context, network, address
 		}).DialContext(ctx, network, address)
 	}
 
-	// Resolve the hostname using custom resolvers
 	result := r.ResolveHost(ctx, host)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	// Try to connect to each resolved IP
 	for _, ip := range result.IPs {
 		addr := net.JoinHostPort(ip.String(), port)
 		conn, err := (&net.Dialer{
@@ -158,7 +145,7 @@ func (r *CustomResolver) CustomDialContext(ctx context.Context, network, address
 	return nil, fmt.Errorf("failed to connect to any resolved IP for %s", host)
 }
 
-// GetLastResolver returns the last resolver used
+// GetLastResolver returns last used resolver
 func (r *CustomResolver) GetLastResolver() string {
 	return r.lastResolver
 }
