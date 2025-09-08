@@ -2,6 +2,10 @@
 <div align="center">
   <br>
   <img src="assets/logo.png" alt="recrawl logo" width="300">
+  <br><br>
+  <a href="https://github.com/root4loot/npmjack/actions/workflows/build.yml">
+    <img src="https://github.com/root4loot/npmjack/actions/workflows/build.yml/badge.svg" alt="Build Status">
+  </a>
 </div>
 
 <br>
@@ -67,57 +71,23 @@ npmjack -i urls.txt
 Use [recrawl](https://github.com/root4loot/recrawl) to find all URLs and pipe them to npmjack (which filters out supported file types)
 
 ```sh
-recrawl -t hackerone.com --hide-status --hide-warning | npmjack
+recrawl -t target.com --hide-status --hide-warning | npmjack
 ```
 
-## Supported File Types
+npmjack detects NPM packages in JavaScript/TypeScript files, configuration files, CI/CD files, and documentation. It handles import/require statements, scoped packages, version specifiers, and build tool configurations.
 
-NpmJack can detect NPM packages in the following file types:
-
-**Configuration Files:**
-- `package.json`, `package-lock.json`, `yarn.lock`
-- `.eslintrc`, `.babelrc`, `tsconfig.json`
-- `webpack.config.js`, `vite.config.js`, `rollup.config.js`
-
-**Source Code:**
-- JavaScript (`.js`, `.mjs`, `.cjs`, `.jsx`)
-- TypeScript (`.ts`, `.tsx`)
-- Vue (`.vue`), Svelte (`.svelte`)
-- HTML files with embedded scripts
-
-**CI/CD & Build:**
-- `Dockerfile`, `docker-compose.yml`
-- GitHub Actions (`.github/workflows/*.yml`)
-- `Makefile`
-
-**Documentation:**
-- `README.md` and other markdown files
-- Code examples and installation commands
-
-## Detection Capabilities
-
-NpmJack can identify packages from various contexts:
-
-- **Import/Require statements** in JavaScript and TypeScript
-- **Dependencies** in package.json, yarn.lock, and package-lock.json  
-- **Build tool configurations** (webpack, babel, eslint, etc.)
-- **CI/CD pipelines** (Docker, GitHub Actions, Makefiles)
-- **Documentation examples** (npm install commands in README)
-- **Scoped packages** (@babel/core, @types/node, etc.)
-- **Version specifiers** (react@^18.0.0, lodash@4.17.21)
-
-## Output
+## Sample Output
 
 ```sh
-$ recrawl -t hackerone.com --hide-status --hide-warning | npmjack
+$ recrawl -t target.com --hide-status --hide-warning | npmjack
 
 PACKAGE                    NAMESPACE            CLAIMED   SOURCE
 -------                    ---------            -------   ------
-jquery                                          Yes         https://www.hackerone.com/assets/js/app.js
-express                                         Yes         https://www.hackerone.com/package.json
-@babel/core                @babel/              No          https://www.hackerone.com/webpack.config.js
-missing-package                                 No          https://www.hackerone.com/Dockerfile
-typescript                                      Yes         https://www.hackerone.com/.github/workflows/ci.yml
+jquery                                          Yes         https://www.target.com/assets/js/app.js
+express                                         Yes         https://www.target.com/package.json
+@babel/core                @babel/              No          https://www.target.com/webpack.config.js
+missing-package                                 No          https://www.target.com/Dockerfile
+typescript                                      Yes         https://www.target.com/.github/workflows/ci.yml
 ```
 
 ## As lib
