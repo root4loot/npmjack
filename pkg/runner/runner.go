@@ -106,11 +106,29 @@ var (
 	webpackExternalRegex = regexp.MustCompile(`externals\s*:\s*\{([^}]+)\}`)
 	rollupBundleRegex    = regexp.MustCompile(`// rollup bundle.*?require\(['"]([^'"]+)['"]\)`)
 
-	jsExtensions        = []string{".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx", ".vue", ".html", ".htm", ".svelte"}
 	jsonExtensions      = []string{".json"}
 	cicdExtensions      = []string{".yml", ".yaml", ".sh", ".bash"}
 	docExtensions       = []string{".md", ".rst", ".txt"}
 	sourceMapExtensions = []string{".map"}
+
+	excludedExtensions = []string{
+		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".svg", ".ico", ".cur",
+		".psd", ".ai", ".eps", ".raw", ".cr2", ".nef", ".orf", ".sr2", ".dng",
+		".mp4", ".avi", ".mov", ".wmv", ".flv", ".webm", ".mkv", ".m4v", ".3gp", ".ogv",
+		".mpg", ".mpeg", ".m2v", ".m4p", ".m4b", ".f4v", ".f4p", ".f4a", ".f4b",
+		".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".m4a", ".opus", ".amr",
+		".aiff", ".au", ".ra", ".3ga", ".ac3", ".ape", ".caf", ".dts", ".m4r", ".mka", ".tak", ".tta", ".wv",
+		".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".lz", ".lzma", ".Z", ".cab", ".arj", ".lha", ".ace", ".zoo", ".arc", ".pak", ".pit", ".sit", ".sitx", ".sea", ".hqx",
+		".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp",
+		".rtf", ".pages", ".numbers", ".key",
+		".exe", ".msi", ".deb", ".rpm", ".dmg", ".pkg", ".app", ".run", ".bin", ".com", ".scr",
+		".bat", ".cmd", ".ps1", ".vbs", ".jar", ".war", ".ear",
+		".ttf", ".otf", ".woff", ".woff2", ".eot", ".fon", ".fnt",
+		".db", ".sqlite", ".sqlite3", ".mdb", ".accdb", ".dbf",
+		".iso", ".img", ".vdi", ".vmdk", ".vhd",
+		".dll", ".so", ".dylib", ".lib", ".a", ".o", ".obj",
+		".swf", ".fla", ".as", ".class",
+	}
 )
 
 type Options struct {
@@ -1111,33 +1129,12 @@ func normalizeURLString(rawURL string) (normalizedURL string, err error) {
 }
 
 func (r *Runner) hasValidExtension(url string) bool {
-	for _, ext := range jsExtensions {
-		if strings.HasSuffix(url, ext) {
-			return true
+	for _, ext := range excludedExtensions {
+		if strings.HasSuffix(strings.ToLower(url), ext) {
+			return false
 		}
 	}
-
-	if r.isJSONFile(url) {
-		return true
-	}
-
-	if r.isConfigFile(url) {
-		return true
-	}
-
-	if r.isCICDFile(url) {
-		return true
-	}
-
-	if r.isDocFile(url) {
-		return true
-	}
-
-	if r.isSourceMapFile(url) {
-		return true
-	}
-
-	return false
+	return true
 }
 
 func trimURLParams(url string) string {
