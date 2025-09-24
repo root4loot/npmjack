@@ -8,7 +8,7 @@ require (
 	github.com/PuerkitoBio/purell v1.2.1
 	github.com/gookit/color v1.6.0
 	github.com/miekg/dns v1.1.68
-	github.com/root4loot/goutils v0.0.0-20250302043352-6bbe55c2774a
+	github.com/root4loot/goutils v0.0.0-20250924090353-6b134a9999cc
 	github.com/root4loot/recrawl v0.0.0-20231012160528-371fedee9e82
 	github.com/root4loot/relog v0.0.0-20231115155851-36e962fb7d8f
 )

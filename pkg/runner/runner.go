@@ -16,6 +16,7 @@ import (
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/root4loot/goutils/hostutil"
+	"github.com/root4loot/goutils/urlutil"
 	"github.com/root4loot/relog"
 )
 
@@ -111,24 +112,6 @@ var (
 	docExtensions       = []string{".md", ".rst", ".txt"}
 	sourceMapExtensions = []string{".map"}
 
-	excludedExtensions = []string{
-		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".webp", ".svg", ".ico", ".cur",
-		".psd", ".ai", ".eps", ".raw", ".cr2", ".nef", ".orf", ".sr2", ".dng",
-		".mp4", ".avi", ".mov", ".wmv", ".flv", ".webm", ".mkv", ".m4v", ".3gp", ".ogv",
-		".mpg", ".mpeg", ".m2v", ".m4p", ".m4b", ".f4v", ".f4p", ".f4a", ".f4b",
-		".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".m4a", ".opus", ".amr",
-		".aiff", ".au", ".ra", ".3ga", ".ac3", ".ape", ".caf", ".dts", ".m4r", ".mka", ".tak", ".tta", ".wv",
-		".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".lz", ".lzma", ".Z", ".cab", ".arj", ".lha", ".ace", ".zoo", ".arc", ".pak", ".pit", ".sit", ".sitx", ".sea", ".hqx",
-		".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp",
-		".rtf", ".pages", ".numbers", ".key",
-		".exe", ".msi", ".deb", ".rpm", ".dmg", ".pkg", ".app", ".run", ".bin", ".com", ".scr",
-		".bat", ".cmd", ".ps1", ".vbs", ".jar", ".war", ".ear",
-		".ttf", ".otf", ".woff", ".woff2", ".eot", ".fon", ".fnt",
-		".db", ".sqlite", ".sqlite3", ".mdb", ".accdb", ".dbf",
-		".iso", ".img", ".vdi", ".vmdk", ".vhd",
-		".dll", ".so", ".dylib", ".lib", ".a", ".o", ".obj",
-		".swf", ".fla", ".as", ".class",
-	}
 )
 
 type Options struct {
@@ -223,7 +206,7 @@ func (r *Runner) Run(urls ...string) {
 
 		if !r.Visited[url] {
 			r.Visited[url] = true
-			if r.hasFileExtension(url) && !r.hasValidExtension(url) {
+			if r.hasFileExtension(url) && urlutil.IsMediaExt(urlutil.GetExt(url)) {
 				continue
 			}
 
@@ -1128,14 +1111,6 @@ func normalizeURLString(rawURL string) (normalizedURL string, err error) {
 	return normalizedURL, err
 }
 
-func (r *Runner) hasValidExtension(url string) bool {
-	for _, ext := range excludedExtensions {
-		if strings.HasSuffix(strings.ToLower(url), ext) {
-			return false
-		}
-	}
-	return true
-}
 
 func trimURLParams(url string) string {
 	if strings.Contains(url, "?") {
