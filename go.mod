@@ -7,7 +7,8 @@ toolchain go1.24.7
 require (
 	github.com/PuerkitoBio/purell v1.2.0
 	github.com/gookit/color v1.5.4
-	github.com/root4loot/goutils v0.0.0-20230801134241-c614870523f8
+	github.com/miekg/dns v1.1.68
+	github.com/root4loot/goutils v0.0.0-20250302043352-6bbe55c2774a
 	github.com/root4loot/recrawl v0.0.0-20231012160528-371fedee9e82
 	github.com/root4loot/relog v0.0.0-20231021000944-471e75e204aa
 )
@@ -15,13 +16,11 @@ require (
 require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/jpillora/go-tld v1.2.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
-	github.com/miekg/dns v1.1.68 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
@@ -32,6 +31,7 @@ require (
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/yl2chen/cidranger v1.0.2 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
@@ -41,3 +41,5 @@ require (
 	golang.org/x/tools v0.33.0 // indirect
 	gopkg.in/djherbis/times.v1 v1.3.0 // indirect
 )
+
+replace github.com/root4loot/goutils => github.com/root4loot/goutils v0.0.0-20250924082617-c24652b0e02a

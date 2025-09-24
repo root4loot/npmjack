@@ -22,6 +22,7 @@ type CLI struct {
 	DelayJitter           int    // maximum jitter to add to delay (in ms)
 	ResponseHeaderTimeout int    // Response header timeout duration (in seconds)
 	UserAgent             string // custom user-agent
+	Proxy                 string // proxy URL (e.g., 127.0.0.1:8080)
 	Infile                string // file containin targets (newline separated)
 	Outfile               string // file to write results
 	ResolversFile         string // file containing DNS resolvers
@@ -47,6 +48,7 @@ func main() {
 	runner.Options.Delay = cli.Delay
 	runner.Options.DelayJitter = cli.DelayJitter
 	runner.Options.UserAgent = cli.UserAgent
+	runner.Options.Proxy = cli.Proxy
 	runner.Options.Verbose = cli.Verbose
 	runner.Options.Silence = cli.Silence
 

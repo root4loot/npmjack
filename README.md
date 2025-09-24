@@ -47,6 +47,7 @@ CONFIGURATIONS:
    -r,  --resolvers      file containing list of resolvers   (Default: System DNS)
    -dj, --delay-jitter   max jitter between requests         (Default: 0 milliseconds)
    -ua, --user-agent     set user agent                      (Default: npmjack)
+   -p,  --proxy          proxy URL                           (Example: 127.0.0.1:8080)
 
 OUTPUT:
    -o,  --outfile        output results to given file

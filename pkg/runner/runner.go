@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/purell"
+	"github.com/root4loot/goutils/hostutil"
 	"github.com/root4loot/relog"
 )
 
@@ -120,6 +121,7 @@ type Options struct {
 	Verbose     bool
 	Silence     bool
 	UserAgent   string
+	Proxy       string
 	Resolvers   []string
 }
 
@@ -169,6 +171,20 @@ func (r *Runner) Run(urls ...string) {
 		r.resolver = NewCustomResolver(r.Options.Resolvers, time.Duration(r.Options.Timeout)*time.Second)
 		if transport, ok := r.client.Transport.(*http.Transport); ok {
 			transport.DialContext = r.resolver.CustomDialContext
+		}
+	}
+
+	if r.Options.Proxy != "" {
+		if transport, ok := r.client.Transport.(*http.Transport); ok {
+			if !hostutil.IsValidHostWithPort(r.Options.Proxy) {
+				Log.Warningf("Invalid proxy format (expected host:port): %s", r.Options.Proxy)
+			} else {
+				proxyURL := &url.URL{
+					Scheme: "http",
+					Host:   r.Options.Proxy,
+				}
+				transport.Proxy = http.ProxyURL(proxyURL)
+			}
 		}
 	}
 
@@ -1137,6 +1153,7 @@ func (r *Runner) getLastResolver() string {
 	}
 	return "system"
 }
+
 
 // SetLogLevel configures logger verbosity
 func SetLogLevel(options *Options) {

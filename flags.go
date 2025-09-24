@@ -29,6 +29,7 @@ func (c *CLI) usage() {
 	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Default: %v)\n", "-r", "--resolvers", "file containing list of resolvers", "System DNS")
 	fmt.Fprintf(w, "\t%s, %s\t%s\t(Default: %d %s)\n", "-dj", "--delay-jitter", "max jitter between requests", npmjack.DefaultOptions().DelayJitter, "milliseconds")
 	fmt.Fprintf(w, "\t%s, %s\t%s\t(Default: %s)\n", "-ua", "--user-agent", "set user agent", npmjack.DefaultOptions().UserAgent)
+	fmt.Fprintf(w, "\t%s,  %s\t%s\t(Example: %s)\n", "-p", "--proxy", "proxy URL", "127.0.0.1:8080")
 
 	fmt.Fprintf(w, "\nOUTPUT:\n")
 	fmt.Fprintf(w, "\t%s,  %s\t%s\n", "-o", "--outfile", "output results to given file")
@@ -60,6 +61,8 @@ func (c *CLI) parseFlags() {
 	flag.IntVar(&c.DelayJitter, "dj", npmjack.DefaultOptions().DelayJitter, "")
 	flag.StringVar(&c.UserAgent, "user-agent", npmjack.DefaultOptions().UserAgent, "")
 	flag.StringVar(&c.UserAgent, "ua", npmjack.DefaultOptions().UserAgent, "")
+	flag.StringVar(&c.Proxy, "proxy", "", "")
+	flag.StringVar(&c.Proxy, "p", "", "")
 	flag.StringVar(&c.ResolversFile, "resolvers", "", "")
 	flag.StringVar(&c.ResolversFile, "r", "", "")
 
