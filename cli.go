@@ -10,8 +10,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/gookit/color"
+	"github.com/root4loot/goutils/log"
 	npmjack "github.com/root4loot/npmjack/pkg/runner"
-	"github.com/root4loot/recrawl/pkg/log"
 )
 
 type CLI struct {
@@ -39,6 +39,10 @@ const author = "@danielantonsen"
 func main() {
 	var targets []string
 	var err error
+
+	// Initialize logger
+	npmjack.Init()
+
 	cli := newCLI()
 	cli.initialize()
 
@@ -74,10 +78,12 @@ func main() {
 			cli.processResults(runner, &wg)
 			runner.Run(url)
 		}
+		runner.Close()
 		wg.Wait()
+		return
 	} else if cli.hasInfile() {
 		if targets, err = cli.readFileLines(cli.Infile); err != nil {
-			npmjack.Log.Errorf("Error reading file: %v", err)
+			log.Errorf("Error reading file: %v", err)
 		}
 	} else if cli.hasTarget() {
 		targets = cli.getTargets()
@@ -89,6 +95,7 @@ func main() {
 			cli.processResults(runner, &wg)
 			runner.Run(target)
 		}
+		runner.Close()
 		wg.Wait()
 	}
 }
@@ -143,7 +150,7 @@ func (c *CLI) writeToFile(lines []string) {
 
 	for i := range lines {
 		if _, err := file.WriteString(lines[i] + "\n"); err != nil {
-			npmjack.Log.Errorf("could not write line to file: %v", err)
+			log.Errorf("could not write line to file: %v", err)
 		}
 	}
 }
@@ -182,7 +189,7 @@ func (c *CLI) getTargets() (targets []string) {
 
 // ReadFileLines reads a file line by line
 func (c *CLI) readFileLines(filepath string) (lines []string, err error) {
-	npmjack.Log.Debugf("Reading file: %s", filepath)
+	log.Debugf("Reading file: %s", filepath)
 
 	file, err := os.Open(filepath)
 	if err != nil {

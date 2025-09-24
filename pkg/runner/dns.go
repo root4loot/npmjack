@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/root4loot/goutils/log"
 )
 
 type CustomResolver struct {
@@ -54,11 +55,11 @@ func (r *CustomResolver) ResolveHost(ctx context.Context, host string) Resolutio
 			r.lastResolver = resolver
 			return result
 		}
-		Log.Debugf("DNS resolution failed with resolver %s: %v", resolver, result.Error)
+		log.Debugf("DNS resolution failed with resolver %s: %v", resolver, result.Error)
 	}
 
 	// fallback
-	Log.Debugf("All custom resolvers failed, trying system DNS")
+	log.Debugf("All custom resolvers failed, trying system DNS")
 	ips, err := net.DefaultResolver.LookupIPAddr(ctx, host)
 	if err != nil {
 		r.lastResolver = "system"
@@ -135,11 +136,11 @@ func (r *CustomResolver) CustomDialContext(ctx context.Context, network, address
 		}).DialContext(ctx, network, addr)
 
 		if err == nil {
-			Log.Debugf("Successfully connected to %s via resolver %s (resolved to %s)", host, result.Resolver, ip.String())
+			log.Debugf("Successfully connected to %s via resolver %s (resolved to %s)", host, result.Resolver, ip.String())
 			r.lastResolver = result.Resolver
 			return conn, nil
 		}
-		Log.Debugf("Failed to connect to %s: %v", addr, err)
+		log.Debugf("Failed to connect to %s: %v", addr, err)
 	}
 
 	return nil, fmt.Errorf("failed to connect to any resolved IP for %s", host)

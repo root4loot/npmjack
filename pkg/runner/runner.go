@@ -16,11 +16,15 @@ import (
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/root4loot/goutils/hostutil"
+	"github.com/root4loot/goutils/log"
 	"github.com/root4loot/goutils/urlutil"
-	"github.com/root4loot/relog"
 )
 
-var Log = relog.NewLogger("npmjack")
+// Init initializes the npmjack logger
+func Init() {
+	log.Init("npmjack")
+	log.SetLevel(log.InfoLevel)
+}
 
 type Runner struct {
 	Options     Options         // options for the runner
@@ -139,6 +143,7 @@ func DefaultOptions() *Options {
 
 // NewRunner creates a new package scanner
 func NewRunner() *Runner {
+	Init() // Initialize logger
 	options := DefaultOptions()
 	SetLogLevel(options)
 
@@ -166,7 +171,6 @@ func NewRunner() *Runner {
 }
 
 func (r *Runner) Run(urls ...string) {
-	defer close(r.Results)
 
 	if len(r.Options.Resolvers) > 0 {
 		r.resolver = NewCustomResolver(r.Options.Resolvers, time.Duration(r.Options.Timeout)*time.Second)
@@ -178,7 +182,7 @@ func (r *Runner) Run(urls ...string) {
 	if r.Options.Proxy != "" {
 		if transport, ok := r.client.Transport.(*http.Transport); ok {
 			if !hostutil.IsValidHostWithPort(r.Options.Proxy) {
-				Log.Warningf("Invalid proxy format (expected host:port): %s", r.Options.Proxy)
+				log.Warnf("Invalid proxy format (expected host:port): %s", r.Options.Proxy)
 			} else {
 				proxyURL := &url.URL{
 					Scheme: "http",
@@ -193,14 +197,14 @@ func (r *Runner) Run(urls ...string) {
 	var wg sync.WaitGroup
 
 	for _, url := range urls {
-		Log.Debugf("Running on %s", url)
+		log.Debugf("Running on %s", url)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.Options.Timeout)*time.Second)
 		defer cancel()
 		url, err := normalizeURLString(url)
 		url = trimURLParams(url)
 		if err != nil {
-			Log.Warningf("%v", err.Error())
+			log.Warnf("%v", err.Error())
 			continue
 		}
 
@@ -225,12 +229,17 @@ func (r *Runner) Run(urls ...string) {
 	wg.Wait()
 }
 
+// Close closes the Results channel
+func (r *Runner) Close() {
+	close(r.Results)
+}
+
 func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Client) Result {
-	Log.Debugf("Scraping packages from %s", url)
+	log.Debugf("Scraping packages from %s", url)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		Log.Warningf("%v", err.Error())
+		log.Warnf("%v", err.Error())
 		return Result{RequestURL: url, Error: err}
 	}
 
@@ -240,7 +249,7 @@ func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Cl
 
 	resp, err := client.Do(req)
 	if err != nil {
-		Log.Warningf("%v", err.Error())
+		log.Warnf("%v", err.Error())
 		return Result{RequestURL: url, Error: err}
 	}
 
@@ -256,7 +265,7 @@ func (r *Runner) scrapePackages(ctx context.Context, url string, client *http.Cl
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		Log.Warningf("Error reading response body: %v", err)
+		log.Warnf("Error reading response body: %v", err)
 		return Result{RequestURL: url, Error: err}
 	}
 
@@ -1060,7 +1069,7 @@ func (r *Runner) isPackageClaimed(packageName string) bool {
 
 	resp, err := r.client.Head(url)
 	if err != nil {
-		Log.Warningf("Error: %v", err)
+		log.Warnf("Error: %v", err)
 		return false
 	}
 
@@ -1081,7 +1090,7 @@ func (r *Runner) getDelay() time.Duration {
 func (r *Runner) hasFileExtension(urlString string) bool {
 	parsedURL, err := url.Parse(urlString)
 	if err != nil {
-		Log.Warningf("Error parsing URL: %v", err)
+		log.Warnf("Error parsing URL: %v", err)
 		return false
 	}
 
@@ -1129,13 +1138,11 @@ func (r *Runner) getLastResolver() string {
 
 // SetLogLevel configures logger verbosity
 func SetLogLevel(options *Options) {
-	Log.Debugln("Setting logger level...")
-
 	if options.Verbose {
-		Log.SetLevel(relog.DebugLevel)
+		log.SetLevel(log.DebugLevel)
 	} else if options.Silence {
-		Log.SetLevel(relog.FatalLevel)
+		log.SetLevel(log.FatalLevel)
 	} else {
-		Log.SetLevel(relog.InfoLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 }

@@ -31,4 +31,7 @@ func main() {
 	for _, url := range urls {
 		npmjack.Run(url)
 	}
+
+	// close the results channel to signal completion
+	npmjack.Close()
 }
